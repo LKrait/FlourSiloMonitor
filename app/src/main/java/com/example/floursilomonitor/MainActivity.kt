@@ -63,7 +63,7 @@ fun FlourSiloApp() {
         when (page) {
             "home" -> Home(
                 open = { selected = it; page = "detail" },
-                navigate = { page = it }
+                nav = { page = it }
             )
             "detail" -> Detail(selected) { page = "home" }
             "trends" -> Trends { page = "home" }
@@ -162,9 +162,9 @@ fun Home(open: (Silo) -> Unit, nav: (String) -> Unit) {
                             Text("Quick Access", fontWeight = FontWeight.Bold, fontSize = 17.sp)
                             Spacer(Modifier.height(8.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                QuickButton("Trends", Icons.Default.ShowChart) { nav("trends") }
-                                QuickButton("Usage", Icons.Default.PieChart) { nav("usage") }
-                                QuickButton("Alarms", Icons.Default.Warning) { nav("alarms") }
+                                QuickButton("Trends", Icons.Default.ShowChart, Modifier.weight(1f)) { nav("trends") }
+                                QuickButton("Usage", Icons.Default.PieChart, Modifier.weight(1f)) { nav("usage") }
+                                QuickButton("Alarms", Icons.Default.Warning, Modifier.weight(1f)) { nav("alarms") }
                             }
                         }
                     }
@@ -185,8 +185,13 @@ fun Metric(label: String, value: String, modifier: Modifier) {
 }
 
 @Composable
-fun QuickButton(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, action: () -> Unit) {
-    OutlinedButton(onClick = action, modifier = Modifier.weight(1f)) {
+fun QuickButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier,
+    action: () -> Unit
+) {
+    OutlinedButton(onClick = action, modifier = modifier) {
         Icon(icon, null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(4.dp))
         Text(text, fontSize = 11.sp)
@@ -297,7 +302,7 @@ fun SiloDrawing(level: Float, modifier: Modifier = Modifier) {
 @Composable
 fun Detail(s: Silo, back: () -> Unit) {
     var refreshed by remember { mutableStateOf(false) }
-    Scaffold(bottomBar = { BottomNav("home", backNav = { back() }) }) { p ->
+    Scaffold(bottomBar = { BottomNav("home") { back() } }) { p ->
         Column(Modifier.fillMaxSize().background(Color(0xFFF4F7FA)).padding(p)) {
             TopBar("${s.name}", "Cone-bottom silo details", back)
             LazyColumn(
@@ -355,13 +360,38 @@ fun Detail(s: Silo, back: () -> Unit) {
 }
 
 @Composable
-fun BottomNav(current: String, backNav: (() -> Unit)? = null) {
+fun BottomNav(current: String, nav: (String) -> Unit) {
     NavigationBar {
-        NavigationBarItem(current == "home", { backNav?.invoke() }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Home") })
-        NavigationBarItem(false, {}, icon = { Icon(Icons.Default.ShowChart, null) }, label = { Text("Trends") })
-        NavigationBarItem(false, {}, icon = { Icon(Icons.Default.History, null) }, label = { Text("History") })
-        NavigationBarItem(false, {}, icon = { Icon(Icons.Default.Notifications, null) }, label = { Text("Alarms") })
-        NavigationBarItem(false, {}, icon = { Icon(Icons.Default.Settings, null) }, label = { Text("Settings") })
+        NavigationBarItem(
+            selected = current == "home",
+            onClick = { nav("home") },
+            icon = { Icon(Icons.Default.Home, null) },
+            label = { Text("Home") }
+        )
+        NavigationBarItem(
+            selected = current == "trends",
+            onClick = { nav("trends") },
+            icon = { Icon(Icons.Default.ShowChart, null) },
+            label = { Text("Trends") }
+        )
+        NavigationBarItem(
+            selected = current == "history",
+            onClick = { nav("history") },
+            icon = { Icon(Icons.Default.History, null) },
+            label = { Text("History") }
+        )
+        NavigationBarItem(
+            selected = current == "alarms",
+            onClick = { nav("alarms") },
+            icon = { Icon(Icons.Default.Notifications, null) },
+            label = { Text("Alarms") }
+        )
+        NavigationBarItem(
+            selected = current == "settings",
+            onClick = { nav("settings") },
+            icon = { Icon(Icons.Default.Settings, null) },
+            label = { Text("Settings") }
+        )
     }
 }
 
